@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>Trainings</h1>
+    {% for article in object_list %}
+        <a href="{% url 'training_details' pk=article.pk %}">
+            {{ article.name }} - {{ article.description }}
+        </a><br>
+    {% empty %}
+        <li>No trainings yet.</li>
+    {% endfor %}
+    <br><br><br><br><br>
+    <a href="{% url 'exercise_create' %}">Add new training</a>
+{% endblock %}

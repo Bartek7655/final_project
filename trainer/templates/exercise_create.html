@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+    <form id="form_container" method="POST">
+        <h1>Add Training:</h1>
+        {% csrf_token %}
+        {{ form_training }}
+        <h2>Exercises:</h2>
+        {{ formset_exercise.management_form }}
+        {% for form in formset_exercise %}
+            <div id="exercise">
+                {{ form.as_p }}
+            </div>
+        {% endfor %}
+        <button id="add_form" type="button">Add another exercise</button>
+        <button type="submit">Create training</button>
+    </form>
+
+
+
+    <script>
+        let exercise = document.querySelectorAll("#exercise")
+        let container = document.querySelector("#form_container")
+        let addButton = document.querySelector("#add_form")
+        let totalForms = document.querySelector("#id_form-TOTAL_FORMS")
+
+        let formNum = exercise.length - 1
+        addButton.addEventListener('click', addForm)
+
+        function addForm(event) {
+            event.preventDefault()
+
+            let newForm = exercise[0].cloneNode(true)
+            let formRegex = RegExp(`form-(\\d){1}-`, 'g')
+
+            formNum++
+            newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formNum}-`)
+            container.insertBefore(newForm, addButton)
+
+            totalForms.setAttribute('value', `${formNum + 1}`)
+        }
+    </script>
+
+{% endblock content %}

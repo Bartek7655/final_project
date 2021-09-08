@@ -25,13 +25,12 @@ class Training(models.Model):
 class Exercise(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=1000)
-    training = models.ForeignKey(Training, on_delete=models.CASCADE, null=True)
+    training = models.ForeignKey(Training, on_delete=models.CASCADE, null=True, related_name='exercise')
 
 
 class Serie(models.Model):
     amount = models.SmallIntegerField()
     kilos = models.SmallIntegerField()
     date = models.DateField()
-    # user = models.ForeignKey(User, on_delete=models.CASCADE)
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE)
-    # training = models.ForeignKey(Training, on_delete=models.CASCADE)
+

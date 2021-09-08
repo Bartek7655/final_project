@@ -57,23 +57,6 @@ class UserEditView(LoginRequiredMixin, gen.UpdateView):
     #     return resolve_url('home')
 
 
-# class TrainingCreateView(LoginRequiredMixin, gen.CreateView):
-#     model = Training, Exercise
-#     form_class = forms.TrainingForm
-#     template_name = 'training_create.html'
-#     success_url = '/training/add/exercise/'  # TODO PO CO TO ?!
-#
-#     def form_valid(self, form):
-#         super().form_valid(form)
-#         self.object = form.save()
-#         user = User.objects.get(pk=self.request.user.pk)
-#         self.object.user.add(user)
-#         # how_many = self.request.POST.get('exercises')
-#         # self.request.session['how_many'] = how_many
-#         # self.request.session['training_pk'] = self.object.pk
-#         return HttpResponseRedirect('/training/add/exercise/')
-#
-
 class TrainingListView(LoginRequiredMixin, gen.ListView):
     model = Training
     template_name = 'training_list.html'
@@ -90,8 +73,8 @@ class TrainingDetailsView(LoginRequiredMixin, gen.DetailView):
     template_name = 'training_details.html'
 
 
-class ExerciseCreateView(LoginRequiredMixin, gen.TemplateView):
-    template_name = 'exercise_create.html'
+class TrainingCreateView(LoginRequiredMixin, gen.TemplateView):
+    template_name = 'training_create.html'
 
     def get(self, *args, **kwargs):
         formset_exercise = forms.ExerciseFormSet(queryset=Exercise.objects.none())
@@ -103,15 +86,17 @@ class ExerciseCreateView(LoginRequiredMixin, gen.TemplateView):
     def post(self, *args, **kwargs):
         formset_exercise = forms.ExerciseFormSet(self.request.POST)
         form_training = forms.TrainingForm(self.request.POST)
-        print(form_training)
-        if form_training.is_valid():
+
+        if formset_exercise.is_valid() and form_training.is_valid():
             user = self.request.user.pk
             training = form_training.save()
             training.user.add(user)
-        if formset_exercise.is_valid(): #and form_training.is_valid():
-            formset_exercise.save()
-            # form_training.save()
+            for form in formset_exercise:
+                exercise = form.save()
+                exercise.training = training
+                exercise.save()
+
             return redirect(reverse_lazy('home'))
-        else:
-            print('error')
-        return self.render_to_response({'formset_exercise':formset_exercise})
+
+        return self.render_to_response({'formset_exercise': formset_exercise,
+                                        'form_training': form_training})

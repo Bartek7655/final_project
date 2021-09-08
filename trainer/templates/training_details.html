@@ -2,5 +2,9 @@
 
 {% block content %}
     <h3>{{ object.name }}</h3>
-    {{ object.description }}
+    {{ object.description }}<br><br><br><br><br>
+    {% for exercise in object.exercise.all %}
+        {{ exercise.name }}<br>
+        {{ exercise.description }}<br><br><br><br><br>
+    {% endfor %}
 {% endblock %}

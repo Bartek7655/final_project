@@ -21,7 +21,6 @@ import trainer.views as trainer
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
     path('', trainer.HomeView.as_view(), name='home'),
     path('accounts/signup/', trainer.SignUpView.as_view(), name='signup'),
     path('accounts/signup/pupil/', trainer.PupilSignUpView.as_view(), name='pupil_signup'),
@@ -30,8 +29,7 @@ urlpatterns = [
     path('accounts/logout/', trainer.UserLogoutView.as_view(), name='logout'),
     path('accounts/edit/<int:pk>/', trainer.UserEditView.as_view(), name='edit'),
     path('training/', trainer.TrainingListView.as_view(), name='training'),
-    # path('training/add/', trainer.TrainingCreateView.as_view(), name='training_create'),
-    path('training/details/<int:pk>', trainer.TrainingDetailsView.as_view(), name='training_details'),
-    path('training/add/exercise/', trainer.ExerciseCreateView.as_view(), name='exercise_create'),
+    path('training/details/<int:pk>/', trainer.TrainingDetailsView.as_view(), name='training_details'),
+    path('training/add/', trainer.TrainingCreateView.as_view(), name='training_create'),
 
 ]

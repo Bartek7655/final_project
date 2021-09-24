@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+    {% regroup series_list by date as trainings %}
+
+    {% for training in trainings %}
+        <table class="steelBlueCols">
+            <thead>
+            <tr>
+                <th style="background-color: red">{{ training.grouper }}</th>
+            </tr>
+            <tr>
+                <th>Exercise</th>
+                <th>Serie</th>
+                <th>Repetitions</th>
+                <th>Kilos</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for serie in training.list %}
+                <tr>
+                    <td>{{ serie.exercise.name }}</td>
+                    <td>{{ serie.serie_number }}</td>
+                    <td>{{ serie.amount }}</td>
+                    <td>{{ serie.kilos }}</td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    {% endfor %}
+
+
+{% endblock %}

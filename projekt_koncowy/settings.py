@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'trainer',
+    'system',
 ]
 
 MIDDLEWARE = [
@@ -76,7 +77,7 @@ WSGI_APPLICATION = 'projekt_koncowy.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'trainer_project',
+        'NAME': 'project_finally',
         'USER': 'postgres',
         'PASSWORD': 'coderslab',
         'HOST': '127.0.0.1',

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h3>{{ object.username }}</h3>
+    {% if not object.pupil.trainer %}
+        <button onclick="location.href = '{% url 'send_invitation' from_pk=from_user to_pk=object.pk %}';" id="myButton"
+                class="btn btn-info">Send a invitation
+        </button>
+    {% endif %}
+{% endblock %}

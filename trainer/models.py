@@ -1,6 +1,9 @@
+import datetime
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+from trainer import validators
 
 class User(AbstractUser):
     is_pupil = models.BooleanField(default=False)
@@ -8,8 +11,8 @@ class User(AbstractUser):
 
 
 class Pupil(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    trainer = models.ForeignKey('Trainer', on_delete=models.SET_NULL, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name='pupil')
+    trainer = models.ForeignKey('Trainer', on_delete=models.SET_NULL, null=True, related_name='pupil')
 
 
 class Trainer(models.Model):
@@ -25,12 +28,16 @@ class Training(models.Model):
 class Exercise(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=1000)
+    amount_serie = models.SmallIntegerField()
     training = models.ForeignKey(Training, on_delete=models.CASCADE, null=True, related_name='exercise')
 
 
 class Serie(models.Model):
     amount = models.SmallIntegerField()
     kilos = models.SmallIntegerField()
+    serie_number = models.SmallIntegerField()
     date = models.DateField()
-    exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE)
+    exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name='serie')
+
+
 

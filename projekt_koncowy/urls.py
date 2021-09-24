@@ -16,8 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-
 import trainer.views as trainer
+import system.views as system
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,5 +31,15 @@ urlpatterns = [
     path('training/', trainer.TrainingListView.as_view(), name='training'),
     path('training/details/<int:pk>/', trainer.TrainingDetailsView.as_view(), name='training_details'),
     path('training/add/', trainer.TrainingCreateView.as_view(), name='training_create'),
+    path('training/edit/<int:pk>/', trainer.TrainingEditView.as_view(), name='training_edit'),
+    path('training/delete/<int:pk>/', trainer.TrainingDeleteView.as_view(), name='training_delete'),
+    path('training/series/<int:pk>/', trainer.SerieCreateView.as_view(), name='serie_create'),
+    path('training/seriespreview/<int:pk>/', trainer.SeriePreviewView.as_view(), name='serie_preview'),
+    path('search/user/', trainer.SearchPupilsView.as_view(), name='search_pupils'),
+    path('pupils/', trainer.ActivePupilsView.as_view(), name='active_pupils'),
+    path('pupils/<int:pk>/', trainer.PupilOverView.as_view(), name='pupil_overview'),
+    path('notifications/', system.NotificationsView.as_view(), name='notifications'),
+    path('send-inv/<int:from_pk>/<int:to_pk>/', system.SendInvitationView.as_view(), name='send_invitation'),
+    path('send-inv/inv-decision/<int:notif_pk>/<str:decision>/', system.InvitationServiceView.as_view(), name='invitation_service'),
 
 ]

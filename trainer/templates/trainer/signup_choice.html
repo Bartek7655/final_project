@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+    <button onclick="location.href = '{% url 'pupil_signup' %}';" id="myButton" class="btn btn-warning">I'm a Pupil
+    </button>
+    <button onclick="location.href = '{% url 'trainer_signup' %}';" id="myButton" class="btn btn-warning">I'm a
+        Trainer
+    </button>
+{% endblock %}

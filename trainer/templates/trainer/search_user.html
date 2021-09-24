@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+    {{ error }}
+    <form method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Search">
+    </form>
+    <br><br>
+    {% for pupil in pupils %}
+        <ul>
+            <li>
+                <a href="{% url 'pupil_overview' pk=pupil.user.pk %}">{{ pupil.user.username }}</a>
+            </li>
+        </ul>
+    {% endfor %}
+{% endblock %}

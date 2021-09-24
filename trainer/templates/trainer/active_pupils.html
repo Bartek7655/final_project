@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <ul>
+        {% for pupil in object_list %}
+            <li>
+                <button onclick="location.href = '{% url 'pupil_overview' pk=pupil.user.pk %}';" id="myButton"
+                        class="btn btn-info">{{ pupil.user.username }}</button>
+            </li>
+        {% endfor %}
+
+
+    </ul>
+    <button onclick="location.href = '{% url 'search_pupils' %}';" id="myButton"
+            class="btn btn-info">Add Pupil
+    </button>
+{% endblock %}

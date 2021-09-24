@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h3>Training name: {{ object.name }}</h3>
+    Training description: {{ object.description }}<br><br><br><br><br>
+    {% for exercise in object.exercise.all %}
+        Name: {{ exercise.name }}<br>
+        Description: {{ exercise.description }}<br>
+        The numbers of series: {{ exercise.amount_serie }}<br>
+        {% if perms.trainer.pupil %}
+            <button onclick="location.href = '{% url 'serie_create' pk=exercise.pk %}';" id="myButton"
+                    class="btn btn-success">Add serie
+            </button>
+        {% endif %}
+
+
+        <br><br>
+    {% endfor %}
+    {% if perms.trainer.trainer %}
+        <button onclick="location.href = '{% url 'training_edit' pk=object.pk %}';" id="myButton"
+                class="btn btn-success">Edit
+        </button>
+        <button onclick="location.href = '{% url 'training_delete' pk=object.pk %}';" id="myButton"
+                class="btn btn-success">Delete
+        </button>
+    {% endif %}
+{% endblock %}

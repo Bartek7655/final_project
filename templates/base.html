@@ -1,32 +1,122 @@
 {% load static %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <style>
+
+
+        table.steelBlueCols {
+            border: 4px solid #555555;
+            background-color: #555555;
+            width: 400px;
+            text-align: center;
+            border-collapse: collapse;
+        }
+
+        table.steelBlueCols td, table.steelBlueCols th {
+            border: 1px solid #555555;
+            padding: 5px 10px;
+        }
+
+        table.steelBlueCols tbody td {
+            font-size: 12px;
+            font-weight: bold;
+            color: #FFFFFF;
+        }
+
+        table.steelBlueCols td:nth-child(even) {
+            background: #398AA4;
+        }
+
+        table.steelBlueCols thead {
+            background: #398AA4;
+            border-bottom: 10px solid #398AA4;
+        }
+
+        table.steelBlueCols thead th {
+            font-size: 15px;
+            font-weight: bold;
+            color: #FFFFFF;
+            text-align: left;
+            border-left: 0px solid #398AA4;
+        }
+
+        table.steelBlueCols thead th:first-child {
+            border-left: none;
+        }
+
+        table.steelBlueCols tfoot td {
+            font-size: 13px;
+        }
+
+        table.steelBlueCols tfoot .links {
+            text-align: right;
+        }
+
+        table.steelBlueCols tfoot .links a {
+            display: inline-block;
+            background: #FFFFFF;
+            color: #398AA4;
+            padding: 2px 8px;
+            border-radius: 5px;
+        }
+
+        .test {
+            background-image: url({% static 'background.jpg' %});
+            background-size: cover;
+            color: brown;
+        }
+    </style>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Fit</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+
+    {#    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->#}
+    {#    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->#}
+    {#    <!--[if lt IE 9]>#}
+    {#    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>#}
+    {#    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>#}
+    {#    <![endif]-->#}
 </head>
-<body>
-<nav>
+<body class="test">
+
+<nav class="navbar navbar-inverse">
     <a href="{% url 'home' %}">
         <img src="{% static 'logo.jpg' %}" alt="Logo">
     </a>
     {% if user.is_authenticated %}
-        <a href="{% url 'training' %}">Trainings</a>
-        <a href="{% url 'logout' %}">Logout</a>
-        <a href="{% url 'edit' pk=user.pk %}">My profile</a>
+        <button onclick="location.href = '{% url 'training' %}';" id="myButton" class="btn btn-info">Trainings</button>
+        {% if perms.trainer.trainer %}
+            <button onclick="location.href = '{% url 'active_pupils' %}';" id="myButton" class="btn btn-info">Pupils
+            </button>
+        {% endif %}
+        <button onclick="location.href = '{% url 'edit' pk=user.pk %}';" id="myButton" class="btn btn-info">My profile
+        </button>
+        <button onclick="location.href = '{% url 'notifications' %}';" id="myButton" class="btn btn-info">Notifications
+        </button>
+        <button onclick="location.href = '{% url 'logout' %}';" id="myButton" class="btn btn-danger">Logout</button>
     {% else %}
-        <a href="{% url 'login' %}">Login</a>
-        <a href="{% url 'signup' %}">Sign up</a>
+        <button onclick="location.href = '{% url 'login' %}';" id="myButton" class="btn btn-danger">Login</button>
+        <button onclick="location.href = '{% url 'signup' %}';" id="myButton" class="btn btn-danger">Sign Up</button>
     {% endif %}
-
 </nav>
-<br><br><br>
-
 {% block content %}
 {% endblock %}
-<br><br><br><br><br><br><br><br><br><br><br><br>
-<br><br><br><br><br><br><br><br><br><br><br><br>
-<br><br><br><br><br><br><br><br><br><br><br><br>
-<footer>Darmowy kreator logo na <a href="https://otologo.pl">otoLogo.pl</a></footer>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"
+        integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ"
+        crossorigin="anonymous"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+        integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd"
+        crossorigin="anonymous"></script>
+<footer></footer>
 </body>
 </html>

@@ -28,31 +28,32 @@ def user_permissions():
 
 
 @pytest.fixture
-def create_trainer(user_permissions):
-    trainer = User.objects.create_user(username='Trainer', password='Testowy123')
+def create_users(user_permissions):
+    trainer = User.objects.create_user(username='Trainer', password='Testowy123',
+                                       is_trainer=True)
+    Trainer.objects.create(user=trainer)
     permission = Permission.objects.get(codename='trainer')
     trainer.user_permissions.add(permission)
-    return trainer
 
+    pupil = User.objects.create_user(username='Pupil', password='Testowy123',
+                                     is_pupil=True)
 
-@pytest.fixture
-def create_pupil(user_permissions):
-    pupil = User.objects.create_user(username='Pupil', password='Testowy123')
+    Pupil.objects.create(user=pupil, trainer=Trainer.objects.first())
     permission = Permission.objects.get(codename='pupil')
     pupil.user_permissions.add(permission)
 
-    return pupil
+    return trainer, pupil
 
 
 @pytest.fixture
-def create_training(create_trainer):
+def create_training(create_users):
     training = Training.objects.create(name='testowy123', description='testowy123')
     training.user.add(User.objects.get(username='Trainer'))
     return training
 
 
 @pytest.fixture
-def login_user(client, create_trainer):
+def login_user(client, create_users):
     return client.login(username='Trainer', password='Testowy123')
 
 
@@ -65,3 +66,4 @@ def create_exercise(create_training):
         training=create_training
     )
     return exercise
+

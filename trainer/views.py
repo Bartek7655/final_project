@@ -10,6 +10,7 @@ from django.urls import reverse_lazy
 
 import trainer.forms as forms
 from trainer.models import User, Training, Exercise, Serie, Trainer, Pupil
+from system.models import Notifications
 
 
 class HomeView(View):
@@ -176,24 +177,30 @@ class TrainingCreateView(PermissionRequiredMixin, gen.TemplateView):
     def get(self, *args, **kwargs):
         # A formset with exercises is added to the context
         formset_exercise = forms.ExerciseFormSet(queryset=Exercise.objects.none())
-        form_training = forms.TrainingForm
+        form_training = forms.TrainingForm(current_user=self.request.user)
         context = {'formset_exercise': formset_exercise,
                    'form_training': form_training}
         return self.render_to_response(context)
 
     def post(self, *args, **kwargs):
-        # Saving formset
+        # Saving formset and create notification for pupil
         formset_exercise = forms.ExerciseFormSet(self.request.POST)
-        form_training = forms.TrainingForm(self.request.POST)
-
+        form_training = forms.TrainingForm(current_user=self.request.user,
+                                           data=self.request.POST)
         if formset_exercise.is_valid() and form_training.is_valid():
             user = self.request.user
+            pupil = User.objects.get(pk=self.request.POST['user'])
             training = form_training.save()
             training.user.add(user)
             for form in formset_exercise:
                 exercise = form.save()
                 exercise.training = training
                 exercise.save()
+            Notifications.objects.create(
+                to_user=pupil,
+                notification=f'{user.username} has created a training, you will find it in your training list.',
+                is_invitation=False
+            )
             return redirect(reverse_lazy('home'))
 
         return self.render_to_response({'formset_exercise': formset_exercise,
@@ -218,7 +225,7 @@ class SerieCreateView(PermissionRequiredMixin, gen.CreateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        # Method saves formsets
+        # Method saves formsets.
         exercise_pk = self.kwargs['pk']
         exercise = Exercise.objects.get(pk=exercise_pk)
         date = forms.SerieDateForm(self.request.POST)
@@ -297,6 +304,7 @@ class ActivePupilsView(PermissionRequiredMixin, gen.ListView):
 
 
 class PupilOverView(PermissionRequiredMixin, gen.DetailView):
+    # View for viewing the pupil's profile
     model = User
     template_name = 'trainer/pupil_overview.html'
     permission_required = 'trainer.trainer'
@@ -307,5 +315,17 @@ class PupilOverView(PermissionRequiredMixin, gen.DetailView):
         return context
 
 
-class NotificationsView(LoginRequiredMixin, gen.TemplateView):
-    template_name = 'trainer/notifications.html'
+class DeleteFromPupilsView(PermissionRequiredMixin, gen.View):
+    # Removes pupil from the pupil's list and create notification for pupil
+    permission_required = 'trainer.trainer'
+
+    def get(self, request, *args, **kwargs):
+        pupil = Pupil.objects.get(pk=kwargs['pupil_pk'])
+        pupil.trainer = None
+        pupil.save()
+        Notifications.objects.create(
+            to_user_id=kwargs['pupil_pk'],
+            notification=f'{self.request.user.username} removed you from the list of pupils.',
+            is_invitation=False
+        )
+        return redirect('active_pupils')

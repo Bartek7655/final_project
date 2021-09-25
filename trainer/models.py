@@ -1,9 +1,6 @@
-import datetime
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-from trainer import validators
 
 class User(AbstractUser):
     is_pupil = models.BooleanField(default=False)
@@ -16,7 +13,7 @@ class Pupil(models.Model):
 
 
 class Trainer(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True, related_name='trainer')
 
 
 class Training(models.Model):

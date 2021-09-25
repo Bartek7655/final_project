@@ -1,6 +1,6 @@
 import pytest
 
-from trainer.models import User, Training, Serie, Exercise
+from trainer.models import User, Training, Serie, Exercise, Pupil
 
 
 def test_homepage(client):
@@ -36,7 +36,7 @@ def test_signup_trainer(client, user_permissions):
 
 
 @pytest.mark.django_db
-def test_login(client, create_trainer):
+def test_login(client, create_users):
     response = client.post('/accounts/login/', {'name': 'Trainer', 'password': 'Testowy123'})
     assert response.status_code == 200
 
@@ -73,19 +73,20 @@ def test_details_training(client, login_user, create_training):
 
 
 @pytest.mark.django_db
-def test_add_training(client, login_user, create_pupil):
-    pupil = create_pupil
+def test_add_training(client, login_user, create_users):
+    pupil = User.objects.get(username='Pupil')
     response = client.post('/training/add/',
                            {
-                               f'name': 'example training name', 'description': 'example training description',
-                               'pupil_username': {pupil.username},
-                               'form-0-name': 'example exercise name',
-                               'form-0-description': 'example exercise description',
-                               'form-0-amount_serie': 3,
+                               f'name': 'example training name',
+                               'description': 'example training description',
+                               'user': {pupil.pk},
                                'form-TOTAL_FORMS': 1,
                                'form-INITIAL_FORMS': 0,
                                'form-MIN_NUM_FORMS': 0,
                                'form-MAX_NUM_FORMS': 1000,
+                               'form-0-name': 'example exercise name',
+                               'form-0-description': 'example exercise description',
+                               'form-0-amount_serie': 3,
                                'form-0-id': ''
                            })
     assert response.status_code == 302
@@ -93,13 +94,13 @@ def test_add_training(client, login_user, create_pupil):
 
 
 @pytest.mark.django_db
-def test_edit_training(client, login_user, create_pupil, create_training):
+def test_edit_training(client, login_user, create_training):
     training = create_training
-    pupil = create_pupil
+    pupil = Pupil.objects.first()
     response = client.post(f'/training/edit/{training.pk}/',
                            {
                                f'name': 'CHANGED', 'description': 'example training description',
-                               'pupil_username': {pupil.pk},
+                               'user': {pupil},
                                'form-0-name': 'example exercise name',
                                'form-0-description': 'example exercise description',
                                'form-0-amount_serie': 3,
@@ -115,12 +116,11 @@ def test_edit_training(client, login_user, create_pupil, create_training):
 
 
 @pytest.mark.django_db
-def test_create_serie(client, create_exercise, create_pupil):
+def test_create_serie(client, create_exercise, create_users):
     client.login(username="Pupil", password="Testowy123")
-
     exercise = Exercise.objects.first()
 
-    client.post(f'/training/serie/{exercise.pk}/',
+    client.post(f'/training/series/{exercise.pk}/',
                 {
                     'date': '2021-09-18',
                     'form-TOTAL_FORMS': '1',
@@ -132,3 +132,6 @@ def test_create_serie(client, create_exercise, create_pupil):
                     'form-0-id': ''
                 })
     assert Serie.objects.all().count() > 0
+
+
+

@@ -1,21 +1,48 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    {% for notification in notifications_list %}
-        {{ notification.notification }}
-        {% if notification.is_invitation == True %}
-            <button onclick="location.href = '{% url 'invitation_service' notif_pk=notification.pk decision='yes' %}';"
-                    id="myButton"
-                    class="btn btn-danger">
-                Accept
-            </button>
-            <button onclick="location.href = '{% url 'invitation_service' notif_pk=notification.pk decision='no' %}';"
-                    id="myButton"
-                    class="btn btn-danger">
-                Denied
-            </button>
-        {% endif %}
-        <br>
-    {% endfor %}
 
+
+
+
+    <table class="steelBlueCols">
+        <thead>
+        <tr>
+            <th>Notification</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for notification in notifications_list %}
+            <tr>
+                <td>{{ notification.notification }}</td>
+
+                {% if notification.is_invitation == True %}
+                    <td>
+                        <button onclick="location.href = '{% url 'invitation_service' notif_pk=notification.pk decision='yes' %}';"
+                                id="myButton"
+                                class="btn btn-danger">
+                            Accept
+                        </button>
+
+                        <button onclick="location.href = '{% url 'invitation_service' notif_pk=notification.pk decision='no' %}';"
+                                id="myButton"
+                                class="btn btn-danger">
+                            Denied
+                        </button>
+                    </td>
+                {% else %}
+                    <td>
+                        <button onclick="location.href = '{% url 'invitation_service' notif_pk=notification.pk decision='delete' %}';"
+                                id="myButton"
+                                class="btn btn-danger">
+                            Delete
+                        </button>
+                    </td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}

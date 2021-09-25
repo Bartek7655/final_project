@@ -6,5 +6,9 @@
         <button onclick="location.href = '{% url 'send_invitation' from_pk=from_user to_pk=object.pk %}';" id="myButton"
                 class="btn btn-info">Send a invitation
         </button>
+        {% elif object.pupil.trainer.user_id == from_user %}
+        <button onclick="location.href = '{% url 'delete_pupil' pupil_pk=object.pk %}';" id="myButton"
+                class="btn btn-info">Delete pupil
+        </button>
     {% endif %}
 {% endblock %}

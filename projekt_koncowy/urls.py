@@ -40,6 +40,8 @@ urlpatterns = [
     path('pupils/<int:pk>/', trainer.PupilOverView.as_view(), name='pupil_overview'),
     path('notifications/', system.NotificationsView.as_view(), name='notifications'),
     path('send-inv/<int:from_pk>/<int:to_pk>/', system.SendInvitationView.as_view(), name='send_invitation'),
-    path('send-inv/inv-decision/<int:notif_pk>/<str:decision>/', system.InvitationServiceView.as_view(), name='invitation_service'),
+    path('send-inv/inv-decision/<int:notif_pk>/<str:decision>/', system.NotificationsServiceView.as_view(),
+         name='invitation_service'),
+    path('pupils/delete-from-pupils/<int:pupil_pk>', trainer.DeleteFromPupilsView.as_view(), name='delete_pupil')
 
 ]

@@ -4,7 +4,6 @@
     <ul class="list-group">
         {% for object in object_list %}
             <li>
-
                 <button onclick="location.href = '{% url 'training_details' pk=object.pk %}';" id="myButton"
                         class="btn btn-info">
                     {{ object.name }}
@@ -20,40 +19,42 @@
             <li>No trainings yet.</li>
         {% endfor %}  </ul>
     <br><br>
+
     {% if perms.trainer.trainer %}
-        <button onclick="location.href = '{% url 'training_create' %}';" id="myButton" class="btn btn-success">Create
+        <button onclick="location.href = '{% url 'training_create' pupil_pk=pupil.pk %}';" id="myButton"
+                class="btn btn-success">Create
             new training
         </button>
-        <h3>Last training your pupil: "{{ training.name }}" made by {{ pupil }}</h3>
-    {% elif perms.trainer.pupil %}
-        <h3>Last training: {{ training.name }}</h3>
-
     {% endif %}
 
-    <h3>{{ series.0.date }}</h3>
-    <table class="steelBlueCols">
-        <thead>
-        <tr>
-            <th>Exercise</th>
-            <th>Serie</th>
-            <th>Repetitions</th>
-            <th>Kilos</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for exercise in exercises %}
-            {% for serie in series %}
-                {% if serie.exercise_id == exercise.id %}
-                    <tr>
-                        <td>{{ exercise.name }}</td>
-                        <td>{{ serie.serie_number }}</td>
-                        <td>{{ serie.amount }}</td>
-                        <td>{{ serie.kilos }}</td>
-                    </tr>
-                {% endif %}
-            {% endfor %}
-        {% endfor %}
-        </tbody>
-    </table>
+    {% if training and perms.trainer.trainer %}
+        <h3>Last training '{{ training.name }}'</h3>
 
+        <h3>{{ series.0.date }}</h3>
+        <table class="steelBlueCols">
+            <thead>
+            <tr>
+                <th>Exercise</th>
+                <th>Serie</th>
+                <th>Repetitions</th>
+                <th>Kilos</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for exercise in exercises %}
+                {% for serie in series %}
+                    {% if serie.exercise_id == exercise.id %}
+                        <tr>
+                            <td>{{ exercise.name }}</td>
+                            <td>{{ serie.serie_number }}</td>
+                            <td>{{ serie.amount }}</td>
+                            <td>{{ serie.kilos }}</td>
+                        </tr>
+
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
 {% endblock %}

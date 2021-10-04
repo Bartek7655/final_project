@@ -8,7 +8,7 @@ from django.db import transaction
 from django.forms import ModelForm, modelformset_factory
 from django.utils.translation import gettext_lazy as _
 
-from trainer.models import Pupil, Trainer, User, Training, Exercise, Serie
+from trainer.models import Pupil, Trainer, User, Training, Exercise, Serie, Photo
 
 
 class PupilForm(UserCreationForm):
@@ -46,21 +46,23 @@ class TrainerForm(UserCreationForm):
 
 class TrainingForm(ModelForm):
 
-    def __init__(self, current_user, *args, **kwargs):
-        # Overwrites the user field so that only people related to a given trainer are displayed
-        super(TrainingForm, self).__init__(*args, **kwargs)
-        self.fields['user'].queryset = self.fields['user'].queryset.filter(pupil__trainer_id=current_user.pk)
+    # def __init__(self, current_user, *args, **kwargs):
+    #     # Overwrites the user field so that only people related to a given trainer are displayed
+    #     super(TrainingForm, self).__init__(*args, **kwargs)
+    #     self.fields['user'].queryset = self.fields['user'].queryset.filter(pupil__trainer_id=current_user.pk)
 
     class Meta:
         model = Training
-        fields = ['name', 'description', 'user']
+        fields = ['name', 'description', 'pupil', 'trainer']
         widgets = {
-            'description': forms.Textarea(attrs={'cols': 30, 'rows': 2})
+            'description': forms.Textarea(attrs={'cols': 30, 'rows': 2}),
+            'pupil': forms.HiddenInput(),
+            'trainer': forms.HiddenInput()
         }
         labels = {
             'name': _('Training name'),
             'description': _('Training description'),
-            'user': _('Pupil')
+            'pupil': _('Pupil')
         }
 
 
@@ -94,19 +96,19 @@ class SerieDateForm(forms.ModelForm):
             raise ValidationError(_('Invalid date'))
         return date
 
-
+#get
 def serie_formset(how_many):
     ''' Function with formset, so that you can display the number of fields to be entered in accordance with
         the number of series of a given exercise. '''
-    SerieFormSet = modelformset_factory(
-        Serie, fields=('amount', 'kilos'), extra=how_many,
-        widgets={
-
-        }
-    )
+    SerieFormSet = modelformset_factory(Serie, fields=('amount', 'kilos'), extra=how_many)
     return SerieFormSet
 
 
 class SearchForm(forms.Form):
     # Search engine form.
     search_by_username = forms.CharField(max_length=100, label='Enter nickname')
+
+class PhotoForm(forms.ModelForm):
+    class Meta:
+        model = Photo
+        fields = ('image', )

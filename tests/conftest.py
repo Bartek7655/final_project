@@ -4,6 +4,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
 from trainer.models import User, Pupil, Trainer, Training, Exercise
+from system.models import Notifications
 
 
 @pytest.fixture
@@ -67,3 +68,15 @@ def create_exercise(create_training):
     )
     return exercise
 
+
+# Notifications
+
+@pytest.fixture
+def create_notification(create_users):
+    notification = Notifications.objects.create(
+        to_user=create_users[1],
+        from_user=create_users[0],
+        notification='test',
+        is_invitation=False
+    )
+    return notification

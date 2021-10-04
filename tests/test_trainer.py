@@ -3,18 +3,18 @@ import pytest
 from trainer.models import User, Training, Serie, Exercise, Pupil
 
 
-def test_homepage(client):
+def test_homepage_view(client):
     response = client.get('/')
     assert response.status_code == 200
 
 
-def test_signup(client):
+def test_signup_view(client):
     response = client.get('/accounts/signup/')
     assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_signup_pupil(client, user_permissions):
+def test_signup_pupil_view(client, user_permissions):
     response = client.post('/accounts/signup/pupil/',
                            data={'username': 'test123', 'password1': 'ZZddlsa7432', 'password2': 'ZZddlsa7432'})
     assert response.status_code == 302
@@ -25,7 +25,7 @@ def test_signup_pupil(client, user_permissions):
 
 
 @pytest.mark.django_db
-def test_signup_trainer(client, user_permissions):
+def test_signup_trainer_view(client, user_permissions):
     response = client.post('/accounts/signup/trainer/',
                            data={'username': 'test123', 'password1': 'ZZddlsa7432', 'password2': 'ZZddlsa7432'})
     assert response.status_code == 302
@@ -36,13 +36,13 @@ def test_signup_trainer(client, user_permissions):
 
 
 @pytest.mark.django_db
-def test_login(client, create_users):
+def test_login_view(client, create_users):
     response = client.post('/accounts/login/', {'name': 'Trainer', 'password': 'Testowy123'})
     assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_logout(client, login_user):
+def test_logout_view(client, login_user):
     response = client.get('/accounts/logout')
     assert response.status_code == 301
     with pytest.raises(TypeError):
@@ -50,7 +50,7 @@ def test_logout(client, login_user):
 
 
 @pytest.mark.django_db
-def test_edit_user(client, login_user):
+def test_edit_user_view(client, login_user):
     user = User.objects.get(username='Trainer')
     response = client.post(f'/accounts/edit/{user.pk}/',
                            {'first_name': 'anna', 'last_name': 'samsung', 'email': 'test@gmail.com'})
@@ -60,20 +60,20 @@ def test_edit_user(client, login_user):
 
 
 @pytest.mark.django_db
-def test_list_training(client, login_user):
+def test_list_training_view(client, login_user):
     response = client.get('/training/')
     assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_details_training(client, login_user, create_training):
+def test_details_training_view(client, login_user, create_training):
     training = create_training
     response = client.get(f'/training/details/{training.pk}/')
     assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_add_training(client, login_user, create_users):
+def test_add_training_view(client, login_user, create_users):
     pupil = User.objects.get(username='Pupil')
     response = client.post('/training/add/',
                            {
@@ -94,7 +94,7 @@ def test_add_training(client, login_user, create_users):
 
 
 @pytest.mark.django_db
-def test_edit_training(client, login_user, create_training):
+def test_edit_training_view(client, login_user, create_training):
     training = create_training
     pupil = Pupil.objects.first()
     response = client.post(f'/training/edit/{training.pk}/',
@@ -116,7 +116,7 @@ def test_edit_training(client, login_user, create_training):
 
 
 @pytest.mark.django_db
-def test_create_serie(client, create_exercise, create_users):
+def test_create_serie_view(client, create_exercise, create_users):
     client.login(username="Pupil", password="Testowy123")
     exercise = Exercise.objects.first()
 
@@ -134,4 +134,11 @@ def test_create_serie(client, create_exercise, create_users):
     assert Serie.objects.all().count() > 0
 
 
-
+@pytest.mark.django_db
+def test_delete_from_pupil_list_view(client, login_user):
+    pupil = User.objects.get(username='Pupil')
+    trainer = User.objects.get(username='Trainer')
+    assert Pupil.objects.get(trainer=trainer.trainer) == pupil.pupil
+    response = client.get(f'/pupils/delete-from-pupils/{pupil.pk}')
+    assert response.status_code == 302
+    assert Pupil.objects.filter(trainer=trainer.trainer).count() == 0

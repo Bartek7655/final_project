@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% for weight in object_list %}
+        {{ weight.kilos }} - {{ weight.date }}
+    {% endfor %}
+{% endblock %}

@@ -1,16 +1,14 @@
-from datetime import datetime
-
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.http import HttpResponse
+from django.db import transaction
 from django.shortcuts import redirect, render
 from django.views import View
 import django.views.generic as gen
 from django.urls import reverse_lazy
 
 import trainer.forms as forms
-from trainer.models import User, Training, Exercise, Serie, Trainer, Pupil
-from system.models import Notifications
+from trainer.models import User, Training, Exercise, Serie, Photo, Pupil, Weight
+from system.models import Notification
 
 
 class HomeView(View):
@@ -67,17 +65,16 @@ class TrainingListView(LoginRequiredMixin, gen.ListView):
 
     def get_queryset(self):
         # I only download trainings related to a given user
-        super().get_queryset()
-        user = User.objects.get(pk=self.request.user.pk)
-        queryset = Training.objects.filter(user=user)
+        queryset = Training.objects.filter(pupil_id=self.kwargs['pupil_pk'])
         return queryset
 
     def get_context_data(self, **kwargs):
         # Adds context with the last training session
         context = super().get_context_data()
-        trainings = Training.objects.filter(user__pk=self.request.user.pk)
-
+        pupil = Pupil.objects.get(pk=self.kwargs['pupil_pk'])
+        trainings = Training.objects.filter(pupil_id=pupil.pk)
         latest_entry_serie = None
+        context['pupil'] = pupil
         for training in trainings:
             exercises = Exercise.objects.filter(training_id=training.id)
             for exercise in exercises:
@@ -92,10 +89,6 @@ class TrainingListView(LoginRequiredMixin, gen.ListView):
 
         try:
             training = latest_entry_serie.exercise.training
-            users = User.objects.filter(training=training)
-            for user in users:
-                if user.is_pupil == True:
-                    pupil = user
             exercises = Exercise.objects.filter(training_id=training.id)
             series = []
             for exercise in exercises:
@@ -106,9 +99,10 @@ class TrainingListView(LoginRequiredMixin, gen.ListView):
             context['training'] = training
             context['exercises'] = exercises
             context['series'] = series
-            context['pupil'] = pupil
+
         except:
             return context
+
         return context
 
 
@@ -118,7 +112,7 @@ class TrainingDetailsView(LoginRequiredMixin, gen.DetailView):
     template_name = 'trainer/training_details.html'
 
     def get_queryset(self):
-        queryset = Training.objects.filter(user__pk=self.request.user.pk)
+        queryset = Training.objects.filter(trainer_id=self.request.user.pk)
         return queryset
 
 
@@ -130,7 +124,7 @@ class TrainingDeleteView(PermissionRequiredMixin, gen.DeleteView):
     success_url = '/training/'
 
     def get_queryset(self):
-        queryset = Training.objects.filter(user__pk=self.request.user.pk)
+        queryset = Training.objects.filter(trainer_id=self.request.user.pk)
         return queryset
 
 
@@ -143,7 +137,7 @@ class TrainingEditView(PermissionRequiredMixin, gen.UpdateView):
     success_url = '/training/'
 
     def get_queryset(self):
-        queryset = Training.objects.filter(user__pk=self.request.user.pk)
+        queryset = Training.objects.filter(trainer_id=self.request.user.pk)
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -165,43 +159,50 @@ class TrainingEditView(PermissionRequiredMixin, gen.UpdateView):
                 form.save()
         else:
             print('error')
+        training = Training.objects.get(pk=kwargs['pk'])
+        return redirect('training', pupil_pk=training.pupil.pk)
 
-        return redirect(reverse_lazy('training'))
 
-
-class TrainingCreateView(PermissionRequiredMixin, gen.TemplateView):
+class TrainingCreateView(PermissionRequiredMixin, gen.CreateView):
     # The view that creates the training
+    model = Training
     permission_required = 'trainer.trainer'
     template_name = 'trainer/training_create.html'
 
     def get(self, *args, **kwargs):
         # A formset with exercises is added to the context
-        formset_exercise = forms.ExerciseFormSet(queryset=Exercise.objects.none())
-        form_training = forms.TrainingForm(current_user=self.request.user)
-        context = {'formset_exercise': formset_exercise,
-                   'form_training': form_training}
-        return self.render_to_response(context)
+        pupil = Pupil.objects.get(pk=self.kwargs['pupil_pk'])
+
+        if pupil.trainer == self.request.user.trainer:
+            formset_exercise = forms.ExerciseFormSet(queryset=Exercise.objects.none())
+            form_training = forms.TrainingForm(initial={'pupil': pupil, 'trainer': self.request.user.trainer})
+            context = {'formset_exercise': formset_exercise,
+                       'form_training': form_training}
+            return self.render_to_response(context)
+        else:
+            # TODO Error404 <--
+            return self.render_to_response({})
 
     def post(self, *args, **kwargs):
         # Saving formset and create notification for pupil
         formset_exercise = forms.ExerciseFormSet(self.request.POST)
-        form_training = forms.TrainingForm(current_user=self.request.user,
-                                           data=self.request.POST)
+        form_training = forms.TrainingForm(data=self.request.POST)
+        pupil = Pupil.objects.get(pk=self.request.POST['pupil'])
         if formset_exercise.is_valid() and form_training.is_valid():
-            user = self.request.user
-            pupil = User.objects.get(pk=self.request.POST['user'])
             training = form_training.save()
-            training.user.add(user)
             for form in formset_exercise:
                 exercise = form.save()
                 exercise.training = training
                 exercise.save()
-            Notifications.objects.create(
-                to_user=pupil,
-                notification=f'{user.username} has created a training, you will find it in your training list.',
+
+            # TODO function notifications
+            Notification.objects.create(
+                to_user=pupil.user,
+                notification=f'{self.request.user.username} has created a training, you will find it in your training list.',
                 is_invitation=False
             )
-            return redirect(reverse_lazy('home'))
+
+            return redirect('training', pupil_pk=pupil.pk)
 
         return self.render_to_response({'formset_exercise': formset_exercise,
                                         'form_training': form_training})
@@ -323,9 +324,48 @@ class DeleteFromPupilsView(PermissionRequiredMixin, gen.View):
         pupil = Pupil.objects.get(pk=kwargs['pupil_pk'])
         pupil.trainer = None
         pupil.save()
-        Notifications.objects.create(
+        Notification.objects.create(
             to_user_id=kwargs['pupil_pk'],
             notification=f'{self.request.user.username} removed you from the list of pupils.',
             is_invitation=False
         )
         return redirect('active_pupils')
+
+
+class WeightListView(LoginRequiredMixin, gen.ListView):
+    model = Weight
+    template_name = 'trainer/weight_list.html'
+
+    def get_queryset(self):
+        queryset = Weight.objects.filter(user=self.kwargs['pupil_pk'])
+        return queryset
+
+
+class AddPhotoView(LoginRequiredMixin, gen.CreateView):
+    template_name = 'trainer/add_photo.html'
+    model = Photo
+    form_class = forms.PhotoForm
+    success_url = '/photos/'
+
+    def post(self, request, *args, **kwargs):
+        form = forms.PhotoForm(self.request.POST, self.request.FILES)
+        if form.is_valid():
+            photo = form.save(commit=False)
+            photo.user = self.request.user
+            photo.save()
+            return redirect('/photos/')
+        return super().render_to_response({'form': form})
+
+
+class PhotosListView(LoginRequiredMixin, gen.ListView):
+    model = Photo
+    template_name = 'trainer/photos_list.html'
+
+    def get_queryset(self):
+        queryset = Photo.objects.filter(user=self.kwargs['pupil_pk'])
+        return queryset
+
+
+class AdditionalInformationView(LoginRequiredMixin, gen.DetailView):
+    model = User
+    template_name = 'trainer/additional_information.html'

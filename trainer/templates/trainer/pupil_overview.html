@@ -2,17 +2,19 @@
 
 {% block content %}
     <h3>{{ object.username }}</h3>
+    {% if object.pupil.trainer == request.user.trainer %}
     <button onclick="location.href = '{% url 'training' pupil_pk=user.pk %}';" id="myButton" class="btn btn-info">
         Trainings
     </button>
     <button onclick="location.href = '{% url 'weight_list' pupil_pk=user.pk %}';" id="myButton" class="btn btn-info">
         Weight
     </button>
-    <button onclick="location.href = '{% url 'messages' from_pk=user.pk%}';" id="myButton" class="btn btn-info">
-        Send a message
-    </button>
     <button onclick="location.href = '{% url 'photos_list' pupil_pk=user.pk %}';" id="myButton" class="btn btn-info">
         Photos
+    </button>
+    {% endif %}
+    <button onclick="location.href = '{% url 'messages' from_pk=user.pk%}';" id="myButton" class="btn btn-info">
+        Send a message
     </button>
     <button onclick="location.href = '{% url 'additional_information' pk=user.pk %}';" id="myButton"
             class="btn btn-info">

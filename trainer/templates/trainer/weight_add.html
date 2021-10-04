@@ -1,15 +1,13 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    {% for message in messages %}
-        {{ message.from_user.username }}:
-        <h5>{{ message.message }}</h5>
+    {% for weight in weights %}
+        {{ weight.date }} - {{ weight.kilos }}KG
         <br>
     {% endfor %}
-
     <form method="POST">
         {% csrf_token %}
         {{ form }}
-        <input type="submit" value="Send">
+        <input type="submit" value="Add">
     </form>
 {% endblock %}

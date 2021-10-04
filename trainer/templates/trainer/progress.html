@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <button onclick="location.href = '{% url 'weight_add' pk=user.pk %}';" id="myButton" class="btn btn-info">
+        Weight
+    </button>
+    <button onclick="location.href = '{% url 'training' pupil_pk=user.pk %}';" id="myButton" class="btn btn-info">
+        Trainings
+    </button>
+{% endblock %}

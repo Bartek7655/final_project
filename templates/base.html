@@ -94,7 +94,11 @@
         {% if perms.trainer.trainer %}
             <button onclick="location.href = '{% url 'active_pupils' %}';" id="myButton" class="btn btn-info">Pupils
             </button>
+        {% elif perms.trainer.pupil %}
+            <button onclick="location.href = '{% url 'progress' %}';" id="myButton" class="btn btn-info">My progress
+            </button>
         {% endif %}
+
         <button onclick="location.href = '{% url 'edit' pk=user.pk %}';" id="myButton" class="btn btn-info">My profile
         </button>
         <button onclick="location.href = '{% url 'notifications' %}';" id="myButton" class="btn btn-info">Notifications

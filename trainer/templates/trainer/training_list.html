@@ -8,12 +8,12 @@
                         class="btn btn-info">
                     {{ object.name }}
                 </button>
-                {% if perms.trainer.trainer %}
-                    <button onclick="location.href = '{% url 'serie_preview' pk=object.pk %}';" id="myButton"
-                            class="btn btn-info">
-                        {{ object.name }} - Check series
-                    </button>
-                {% endif %}
+
+                <button onclick="location.href = '{% url 'serie_preview' pk=object.pk %}';" id="myButton"
+                        class="btn btn-info">
+                    {{ object.name }} - Check series
+                </button>
+
             </li>
         {% empty %}
             <li>No trainings yet.</li>
@@ -27,7 +27,7 @@
         </button>
     {% endif %}
 
-    {% if training and perms.trainer.trainer %}
+    {% if training %}
         <h3>Last training '{{ training.name }}'</h3>
 
         <h3>{{ series.0.date }}</h3>

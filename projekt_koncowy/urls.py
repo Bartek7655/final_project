@@ -50,10 +50,12 @@ urlpatterns = [
                   path('pupils/delete-from-pupils/<int:pupil_pk>', trainer.DeleteFromPupilsView.as_view(),
                        name='delete_pupil'),
                   path('weight/<int:pupil_pk>', trainer.WeightListView.as_view(), name='weight_list'),
+                  path('weight/add/<int:pk>', trainer.WeightAddView.as_view(), name='weight_add'),
                   path('messages/<int:from_pk>', system.MessagesView.as_view(), name='messages'),
                   path('photos/add/', trainer.AddPhotoView.as_view(), name='add_photo'),
                   path('photos/<int:pupil_pk>/', trainer.PhotosListView.as_view(), name='photos_list'),
                   path('user/information/<int:pk>/', trainer.AdditionalInformationView.as_view(),
                        name='additional_information'),
+                  path('progress/', trainer.ProgressView.as_view(), name='progress'),
 
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

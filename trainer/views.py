@@ -4,7 +4,7 @@ from django.db import transaction
 from django.shortcuts import redirect, render
 from django.views import View
 import django.views.generic as gen
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 
 import trainer.forms as forms
 from trainer.models import User, Training, Exercise, Serie, Photo, Pupil, Weight
@@ -99,7 +99,6 @@ class TrainingListView(LoginRequiredMixin, gen.ListView):
             context['training'] = training
             context['exercises'] = exercises
             context['series'] = series
-
         except:
             return context
 
@@ -112,7 +111,10 @@ class TrainingDetailsView(LoginRequiredMixin, gen.DetailView):
     template_name = 'trainer/training_details.html'
 
     def get_queryset(self):
-        queryset = Training.objects.filter(trainer_id=self.request.user.pk)
+        if self.request.user.has_perm('trainer.pupil'):
+            queryset = Training.objects.filter(pupil_id=self.request.user.pk)
+        else:
+            queryset = Training.objects.filter(trainer_id=self.request.user.pk)
         return queryset
 
 
@@ -123,9 +125,23 @@ class TrainingDeleteView(PermissionRequiredMixin, gen.DeleteView):
     template_name = 'trainer/training_delete.html'
     success_url = '/training/'
 
+    def get(self, *args, **kwargs):
+        object = self.get_object()
+        if object.pupil.trainer == self.request.user.trainer:
+            return super().get(*args, **kwargs)
+        else:
+            return redirect('home')
+
     def get_queryset(self):
         queryset = Training.objects.filter(trainer_id=self.request.user.pk)
+        pupil_pk = Training.objects.get(pk=self.kwargs['pk']).pupil.user_id
+        self.request.session['pupil_pk'] = pupil_pk
         return queryset
+
+    def get_success_url(self):
+        pupil_pk = self.request.session['pupil_pk']
+        del self.request.session['pupil_pk']
+        return reverse_lazy('training', kwargs={'pupil_pk': pupil_pk})
 
 
 class TrainingEditView(PermissionRequiredMixin, gen.UpdateView):
@@ -135,6 +151,15 @@ class TrainingEditView(PermissionRequiredMixin, gen.UpdateView):
     template_name = 'trainer/training_edit.html'
     fields = ('name', 'description')
     success_url = '/training/'
+
+    def get(self, *args, **kwargs):
+        object = self.get_object()
+        print(object.pupil.trainer)
+        print(self.request.user)
+        if object.pupil.trainer == self.request.user.trainer:
+            return super().get(*args, **kwargs)
+        else:
+            return redirect('home')
 
     def get_queryset(self):
         queryset = Training.objects.filter(trainer_id=self.request.user.pk)
@@ -180,8 +205,7 @@ class TrainingCreateView(PermissionRequiredMixin, gen.CreateView):
                        'form_training': form_training}
             return self.render_to_response(context)
         else:
-            # TODO Error404 <--
-            return self.render_to_response({})
+            return redirect('home')
 
     def post(self, *args, **kwargs):
         # Saving formset and create notification for pupil
@@ -248,9 +272,8 @@ class SerieCreateView(PermissionRequiredMixin, gen.CreateView):
                                                 'form': forms.SerieDateForm(self.request.POST)})
 
 
-class SeriePreviewView(PermissionRequiredMixin, gen.TemplateView):
+class SeriePreviewView(LoginRequiredMixin, gen.TemplateView):
     # View for the training overview.
-    permission_required = 'trainer.trainer'
     template_name = 'trainer/serie_preview.html'
 
     def get_context_data(self, **kwargs):
@@ -336,16 +359,49 @@ class WeightListView(LoginRequiredMixin, gen.ListView):
     model = Weight
     template_name = 'trainer/weight_list.html'
 
+    def get(self, *args, **kwargs):
+        pupil = User.objects.get(pk=self.kwargs['pupil_pk']).pupil
+        if pupil.trainer == self.request.user.trainer:
+            return super().get(*args, **kwargs)
+        else:
+            return redirect('home')
+
     def get_queryset(self):
         queryset = Weight.objects.filter(user=self.kwargs['pupil_pk'])
         return queryset
+
+
+class WeightAddView(LoginRequiredMixin, gen.CreateView):
+    model = Weight
+    template_name = 'trainer/weight_add.html'
+    form_class = forms.WeightForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = forms.WeightForm(initial={
+            'user': self.request.user
+        })
+        weights = Weight.objects.filter(user=self.request.user)
+        context['form'] = form
+        context['weights'] = weights
+        return context
+
+    def post(self, *args, **kwargs):
+        form = forms.WeightForm(self.request.POST)
+        if form.is_valid():
+            form.save()
+            return form
+        else:
+            return self.render_to_response({'form': form})
+
+    def get_success_url(self, **kwargs):
+        return reverse_lazy('weight_add', kwargs={'pk': self.request.user.pk})
 
 
 class AddPhotoView(LoginRequiredMixin, gen.CreateView):
     template_name = 'trainer/add_photo.html'
     model = Photo
     form_class = forms.PhotoForm
-    success_url = '/photos/'
 
     def post(self, request, *args, **kwargs):
         form = forms.PhotoForm(self.request.POST, self.request.FILES)
@@ -353,13 +409,21 @@ class AddPhotoView(LoginRequiredMixin, gen.CreateView):
             photo = form.save(commit=False)
             photo.user = self.request.user
             photo.save()
-            return redirect('/photos/')
-        return super().render_to_response({'form': form})
+            return redirect('photos_list', self.request.user.pk)
+        else:
+            return super().render_to_response({'form': form})
 
 
 class PhotosListView(LoginRequiredMixin, gen.ListView):
     model = Photo
     template_name = 'trainer/photos_list.html'
+
+    def get(self, *args, **kwargs):
+        pupil = User.objects.get(pk=self.kwargs['pupil_pk']).pupil
+        if pupil.trainer == self.request.user.trainer:
+            return super().get(*args, **kwargs)
+        else:
+            return redirect('home')
 
     def get_queryset(self):
         queryset = Photo.objects.filter(user=self.kwargs['pupil_pk'])
@@ -369,3 +433,8 @@ class PhotosListView(LoginRequiredMixin, gen.ListView):
 class AdditionalInformationView(LoginRequiredMixin, gen.DetailView):
     model = User
     template_name = 'trainer/additional_information.html'
+
+
+class ProgressView(PermissionRequiredMixin, gen.TemplateView):
+    permission_required = 'trainer.pupil'
+    template_name = 'trainer/progress.html'

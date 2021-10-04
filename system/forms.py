@@ -8,4 +8,8 @@ class MessageForm(forms.ModelForm):
         widgets = {
             'to_user' : forms.HiddenInput(),
             'from_user' : forms.HiddenInput(),
+            'message' : forms.Textarea(attrs={'cols': 30, 'rows': 2})
+        }
+        labels = {
+            'message' : ''
         }

@@ -16,7 +16,7 @@
 
         <br><br>
     {% endfor %}
-    {% if perms.trainer.trainer %}
+    {% if request.user == training.pupil.trainer.user %}
         <button onclick="location.href = '{% url 'training_edit' pk=object.pk %}';" id="myButton"
                 class="btn btn-success">Edit
         </button>
